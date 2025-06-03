@@ -511,7 +511,7 @@ const AWSIoTCoreCalculator = () => {
                     </div>
 
                     {/* LoRaWAN */}
-                    <div className="bg-red-50 p-6 rounded-lg">
+                    {/* <div className="bg-red-50 p-6 rounded-lg">
                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                             <Radio className="w-5 h-5 text-red-600" />
                             LoRaWAN
@@ -586,10 +586,10 @@ const AWSIoTCoreCalculator = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div> */}
 
                     {/* Device Location */}
-                    <div className="bg-indigo-50 p-6 rounded-lg">
+                    {/* <div className="bg-indigo-50 p-6 rounded-lg">
                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                             <MapPin className="w-5 h-5 text-indigo-600" />
                             Device Location
@@ -630,7 +630,7 @@ const AWSIoTCoreCalculator = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Results Panel */}
