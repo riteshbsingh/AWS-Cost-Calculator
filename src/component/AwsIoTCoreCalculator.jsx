@@ -105,11 +105,7 @@ const AWSIoTCoreCalculator = () => {
         },
         'ap-south-1': {
             connectivity: 0.092, // per million minutes
-            messaging: {
-                upTo1B: 1.05, // per million messages
-                next4B: 0.84, // per million messages
-                above5B: 0.74 // per million messages
-            },
+            messaging: 1.05,
             deviceShadow: 1.31, // per million operations
             registry: 1.31, // per million operations
             rulesTriggered: 0.158, // per million rules
@@ -305,6 +301,7 @@ const AWSIoTCoreCalculator = () => {
                                     <option value="us-east-1">US East (N. Virginia)</option>
                                     <option value="eu-west-1">Europe (Ireland)</option>
                                     <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                    <option value="ap-south-1">Asia Pacific (Mumbai)</option>
                                 </select>
                             </div>
                             <div>
