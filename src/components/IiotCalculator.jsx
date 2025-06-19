@@ -247,7 +247,7 @@ function IiotCalculator() {
             gutterBottom
             sx={{ mb: 4, color: "primary.main" }}
           >
-            AWS IIoT cost Calculator
+            IIoT Cost Calculator
           </Typography>
         </motion.div>
 

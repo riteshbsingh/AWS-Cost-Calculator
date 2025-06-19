@@ -1,16 +1,31 @@
-import React from 'react'
-import AWSIoTCoreCalculator from './component/AwsIoTCoreCalculator'
-import Crypto from './component/Crypto'
-import IiotCalculator from './component/IiotCalculator'
+// src/App.js
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AppProvider } from './context/AppContext';
+import Page1DeviceConfig from './pages/Page1DeviceConfig';
+import Page2CloudBroker from './pages/Page2CloudBroker';
+import Page3MQTTBroker from './pages/Page3MQTTBroker';
+import Page4Storage from './pages/Page4Storage';
+import FinalSummary from './pages/FinalSummary';
+import IIoTCostCalculator from './components/IIoTCostCalculator';
+import AWSIoTCoreCalculator from './components/AwsIoTCoreCalculator';
+import IiotCalculator from './components/IiotCalculator';
 
-const App = () => {
+function App() {
   return (
-    <div>
-      <AWSIoTCoreCalculator />
-      {/* <Crypto /> */}
+    <AppProvider>
+      {/* <AWSIoTCoreCalculator /> */}
       {/* <IiotCalculator /> */}
-    </div>
-  )
+      <Router>
+        <Routes>
+          <Route path="/" element={<IIoTCostCalculator />} />
+          <Route path="/cloud-broker" element={<Page2CloudBroker />} />
+          <Route path="/mqtt-broker" element={<Page3MQTTBroker />} />
+          <Route path="/storage" element={<Page4Storage />} />
+          <Route path="/summary" element={<FinalSummary />} />
+        </Routes>
+      </Router>
+    </AppProvider>
+  );
 }
 
-export default App
+export default App;
