@@ -1,4 +1,4 @@
-export const onSave = async (data) => {
+export const SaveReport = async (data) => {
   try {
     const response = await fetch(`https://aws-calculator-backend.onrender.com/onSave`, {
       method: 'POST',

@@ -2,8 +2,8 @@ import React, { useState, useRef } from "react";
 import { FileText, Download, Save, Loader2, X } from "lucide-react";
 import jsPDF from 'jspdf'; 
 import html2canvas from 'html2canvas';
-import { onSave } from "../api/saveReport";
 import { useNavigate } from "react-router-dom";
+import { SaveReport } from "../api/saveReport";
 
 const CostReportComponent = ({
   formData = {},
@@ -62,7 +62,7 @@ const CostReportComponent = ({
   const selectedDatabase = databases.find((d) => d.id === formData.database);
 
 const handleSave = async (client) => {
-    if (!onSave) return;
+    if (!SaveReport) return;
     setIsSaving(true);
     setSaveStatus("");
     try {
@@ -74,7 +74,7 @@ const handleSave = async (client) => {
         timestamp: new Date().toISOString(),
         selectedServices: { cloudBroker: selectedCloudBroker, database: selectedDatabase },
       };
-      const result = await onSave(reportData);
+      const result = await SaveReport(reportData);
       if (result.success) {
         setSaveStatus(result.message);
         navigate("/reports")
