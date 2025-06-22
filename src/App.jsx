@@ -9,6 +9,7 @@ import FinalSummary from './pages/FinalSummary';
 import IIoTCostCalculator from './components/IIoTCostCalculator';
 import AWSIoTCoreCalculator from './components/AwsIoTCoreCalculator';
 import IiotCalculator from './components/IiotCalculator';
+import ReportListComponent from './components/ReportList';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<IIoTCostCalculator />} />
-          <Route path="/cloud-broker" element={<Page2CloudBroker />} />
+          <Route path="/reports" element={<ReportListComponent />} />
           <Route path="/mqtt-broker" element={<Page3MQTTBroker />} />
           <Route path="/storage" element={<Page4Storage />} />
           <Route path="/summary" element={<FinalSummary />} />

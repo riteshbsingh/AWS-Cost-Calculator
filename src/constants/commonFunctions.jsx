@@ -186,7 +186,7 @@ export function findBestCloudPlans(
       concurrentUsers,
       storageDurationMonths,
       totalMessagesPerMonth,
-      totalDataPerMonthGB: totalDataPerMonthGB.toFixed(2),
+      totalDataPerMonthGB: parseFloat(totalDataPerMonthGB).toFixed(2),
       totalStorageRequiredGB: totalStorageRequiredGB.toFixed(2),
       totalTransferRequiredTB: totalTransferRequiredTB.toFixed(2),
       requiredRamGB,
