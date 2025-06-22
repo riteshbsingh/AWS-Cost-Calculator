@@ -3,7 +3,7 @@ import { FileText, Download, Save, Loader2, X } from "lucide-react";
 // import jsPDF from 'jspdf'; 
 // import html2canvas from 'html2canvas';
 import { useNavigate } from "react-router-dom";
-import { SaveReport } from "../api/saveReport";
+import { SaveReport } from "../api/addReport";
 
 const CostReportComponent = ({
   formData = {},
