@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { FileText, Download, Save, Loader2, X } from "lucide-react";
-import jsPDF from 'jspdf'; 
-import html2canvas from 'html2canvas';
+// import jsPDF from 'jspdf'; 
+// import html2canvas from 'html2canvas';
 import { useNavigate } from "react-router-dom";
 import { SaveReport } from "../api/saveReport";
 
@@ -92,38 +92,38 @@ const handleSave = async (client) => {
     }
   };
 
-  const handleDownload = async (client) => {
-    setIsDownloading(true);
-    try {
-      if (!client) {
-        throw new Error("Client name is required");
-      }
+  // const handleDownload = async (client) => {
+  //   setIsDownloading(true);
+  //   try {
+  //     if (!client) {
+  //       throw new Error("Client name is required");
+  //     }
 
-      if (!jsPDF || !html2canvas) {
-        throw new Error("Required libraries (jsPDF or html2canvas) not loaded");
-      }
+  //     if (!jsPDF || !html2canvas) {
+  //       throw new Error("Required libraries (jsPDF or html2canvas) not loaded");
+  //     }
 
-      const reportElement = reportRef.current;
-      const canvas = await html2canvas(reportElement, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "px",
-        format: [canvas.width, canvas.height],
-      });
+  //     const reportElement = reportRef.current;
+  //     const canvas = await html2canvas(reportElement, { scale: 2 });
+  //     const imgData = canvas.toDataURL("image/png");
+  //     const pdf = new jsPDF({
+  //       orientation: "portrait",
+  //       unit: "px",
+  //       format: [canvas.width, canvas.height],
+  //     });
 
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-      pdf.save(`cost-report-${client}-${new Date().toISOString().split("T")[0]}.pdf`);
-    } catch (error) {
-      console.error("Download failed:", error);
-      setSaveStatus("Failed to download PDF. Please try again.");
-      setTimeout(() => setSaveStatus(""), 3000);
-    } finally {
-      setIsDownloading(false);
-      setShowClientPopup(false);
-      setClientName("");
-    }
-  };
+  //     pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+  //     pdf.save(`cost-report-${client}-${new Date().toISOString().split("T")[0]}.pdf`);
+  //   } catch (error) {
+  //     console.error("Download failed:", error);
+  //     setSaveStatus("Failed to download PDF. Please try again.");
+  //     setTimeout(() => setSaveStatus(""), 3000);
+  //   } finally {
+  //     setIsDownloading(false);
+  //     setShowClientPopup(false);
+  //     setClientName("");
+  //   }
+  // };
 
   const handleActionClick = (type) => {
     setActionType(type);
@@ -138,7 +138,7 @@ const handleSave = async (client) => {
     if (actionType === "save") {
       handleSave(clientName);
     } else if (actionType === "download") {
-      handleDownload(clientName);
+      // handleDownload(clientName);
     }
   };
 
