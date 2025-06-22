@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { ChevronRight, ChevronLeft, Calculator, Cloud, Database, MessageSquare, FileText, Check, Monitor, Server, Router } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { findBestCloudPlans } from '../constants/commonFunctions';
 
 const IIoTCostCalculator = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,7 +22,8 @@ const IIoTCostCalculator = () => {
     azureVm: 'b1s',
     googleVm: 'e2-micro',
     ebsStorage: 0,
-
+    concurrentUsers: 20,
+    storageDurationMonths: 1,
 
     // Page 2 - Cloud Broker
     cloudBroker: 'aws-iot',
@@ -34,7 +36,8 @@ const IIoTCostCalculator = () => {
     database: 's3',
 
     // Page 3 - Database
-    vmService: 'lightsail'
+    vmService: 'lightsail',
+    finalPlan: {}
 
   });
 
@@ -142,22 +145,22 @@ const IIoTCostCalculator = () => {
   }
 
   const vmCostCalculation = () => {
-    let tempPlan;
-    if (formData.cloudProvider === 'aws' && formData.vmService === 'lightsail' && formData.lightsailPlan) {
-      tempPlan = awsLightsailPlans.find(p => p.id === formData.lightsailPlan);
-      tempPlan = { ...tempPlan, price: tempPlan.price.toFixed(2) }
-    } else if (formData.cloudProvider === 'aws' && formData.vmService === 'ec2' && formData.ec2Plan) {
-      tempPlan = awsEc2Plans.find(p => p.id === formData.ec2Plan);
-      tempPlan = { ...tempPlan, price: tempPlan.price.toFixed(2) + (formData.ebsStorage * 0.08).toFixed(0) }
-    } else if (formData.cloudProvider === 'azure' && formData.azureVm) {
-      tempPlan = awsEc2Plans.find(p => p.id === formData.ec2Plan);
-      tempPlan = { ...tempPlan, price: (tempPlan.price * 24 * 30).toFixed(2) }
-    } else {
-      tempPlan = vmServices.google.find(v => v.id === formData.googleVm);
-      tempPlan = { ...tempPlan, price: (tempPlan.price * 24 * 30).toFixed(2) }
-    }
+    // let tempPlan;
+    // if (formData.cloudProvider === 'aws' && formData.vmService === 'lightsail' && formData.lightsailPlan) {
+    //   tempPlan = awsLightsailPlans.find(p => p.id === formData.lightsailPlan);
+    //   tempPlan = { ...tempPlan, price: tempPlan.price.toFixed(2) }
+    // } else if (formData.cloudProvider === 'aws' && formData.vmService === 'ec2' && formData.ec2Plan) {
+    //   tempPlan = awsEc2Plans.find(p => p.id === formData.ec2Plan);
+    //   tempPlan = { ...tempPlan, price: tempPlan.price.toFixed(2) + (formData.ebsStorage * 0.08).toFixed(0) }
+    // } else if (formData.cloudProvider === 'azure' && formData.azureVm) {
+    //   tempPlan = awsEc2Plans.find(p => p.id === formData.ec2Plan);
+    //   tempPlan = { ...tempPlan, price: (tempPlan.price * 24 * 30).toFixed(2) }
+    // } else {
+    //   tempPlan = vmServices.google.find(v => v.id === formData.googleVm);
+    //   tempPlan = { ...tempPlan, price: (tempPlan.price * 24 * 30).toFixed(2) }
+    // }
     // setPlan(tempPlan)
-    return tempPlan;
+    return formData.finalPlan
   }
 
   // Mock data for services
@@ -455,7 +458,7 @@ const IIoTCostCalculator = () => {
 
     if (formData.vmService) {
       const vmCost = vmCostCalculation();
-      totalMonthlyCost += parseFloat(vmCost.price)
+      totalMonthlyCost += parseFloat(vmCost.monthlyCost)
     }
 
     return totalMonthlyCost;
@@ -867,286 +870,465 @@ const IIoTCostCalculator = () => {
     </div>
   );
 
-  const renderPage4 = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <Server className="mx-auto mb-4 text-blue-500" size={48} />
-        <h2 className="text-2xl font-bold text-gray-800">Virtual Machine Selection</h2>
-        <p className="text-gray-600">Choose your cloud provider and VM service</p>
-      </div>
+  const renderPage4 = () => {
+    // Calculate recommendations when workload data is available
+    const recommendations = findBestCloudPlans(
+          formData.machines,
+          formData.messageSize,
+          formData.frequency,
+          formData.tagsPerMachine,
+          formData.concurrentUsers,
+          formData.storageDurationMonths
+        )
 
-      {/* Cloud Provider Dropdown */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Cloud Provider</label>
-        <select
-          value={formData.cloudProvider}
-          onChange={(e) => handleInputChange('cloudProvider', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Select Provider</option>
-          <option value="aws">AWS</option>
-          <option value="azure">Azure</option>
-          <option value="google">Google Cloud</option>
-        </select>
-      </div>
+    // handleInputChange('recommendedVM', recommendations.comparison.cheapestOption);
 
-      {/* AWS Services */}
-      {formData.cloudProvider === 'aws' && (
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">AWS Services</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {['lightsail', 'ec2'].map(service => (
-              <div
-                key={service}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.vmService === service
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 hover:border-blue-400'
-                  }`}
-                onClick={() => handleInputChange('vmService', service)}
-              >
-                <h4 className="text-md font-semibold">{service == 'lightsail' ? 'Lightsail' : 'EC2'}</h4>
-                <p className="text-sm text-gray-600">
-                  {service === 'lightsail'
-                    ? 'Simple and cost-effective virtual servers.'
-                    : 'Highly configurable, scalable compute capacity.'}
-                </p>
-              </div>
-            ))}
-          </div>
+    return (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <Server className="mx-auto mb-4 text-blue-500" size={48} />
+          <h2 className="text-2xl font-bold text-gray-800">Virtual Machine Selection</h2>
+          <p className="text-gray-600">Configure your workload and get optimized cloud recommendations</p>
         </div>
-      )}
 
-      {/* AWS Lightsail Plans */}
-      {formData.cloudProvider === 'aws' && formData.vmService === 'lightsail' && (
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Lightsail Plans</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {awsLightsailPlans.map(plan => (
-              <div
-                key={plan.id}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.lightsailPlan === plan.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 hover:border-blue-400'
-                  }`}
-                onClick={() => handleInputChange('lightsailPlan', plan.id)}
-              >
-                <h4 className="text-md font-semibold text-gray-900 mb-1">{plan.name}</h4>
-                <p className="text-gray-700 text-sm mb-2">${plan.price} USD / month</p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>💾 <strong>RAM:</strong> {plan.ram}</li>
-                  <li>🖥️ <strong>CPU:</strong> {plan.cpu}</li>
-                  <li>💽 <strong>Storage:</strong> {plan.storage}</li>
-                  <li>🌐 <strong>Transfer:</strong> {plan.transfer}</li>
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        {/* Workload Configuration Section */}
+        {/* <div className="bg-blue-50 p-6 rounded-xl shadow-md">
+          <h3 className="text-xl font-semibold text-gray-800 mb-6">Workload Configuration</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-      {/* AWS EC2 Plans */}
-      {formData.cloudProvider === 'aws' && formData.vmService === 'ec2' && (
-        <div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">EC2 Instance Types</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {awsEc2Plans.map(plan => (
-                <div
-                  key={plan.id}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.ec2Plan === plan.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-300 hover:border-blue-400'
-                    }`}
-                  onClick={() => handleInputChange('ec2Plan', plan.id)}
-                >
-                  <h4 className="text-md font-semibold text-gray-900 mb-1">{plan.name}</h4>
-                  <p className="text-gray-700 text-sm mb-2">${plan.price} USD / month</p>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>💾 <strong>RAM:</strong> {plan.ram}</li>
-                    <li>🖥️ <strong>CPU:</strong> {plan.cpu}</li>
-                    <li>💽 <strong>Storage:</strong> {plan.storage}</li>
-                    <li>🌐 <strong>Transfer:</strong> {plan.transfer}</li>
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 mt-4">EBS Types</h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Storage Size (GB)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Machine Count</label>
               <input
                 type="number"
-                value={formData.ebsStorage}
-                onChange={(e) => handleInputChange('ebsStorage', parseInt(e.target.value))}
+                value={formData.machineCount || ''}
+                onChange={(e) => handleInputChange('machineCount', parseInt(e.target.value) || 0)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Number of machines"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Message Size (KB)</label>
+              <input
+                type="number"
+                value={formData.messageSizeKB || ''}
+                onChange={(e) => handleInputChange('messageSizeKB', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Size in KB"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Message Frequency (seconds)</label>
+              <input
+                type="number"
+                value={formData.messageFrequencySec || ''}
+                onChange={(e) => handleInputChange('messageFrequencySec', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Frequency in seconds"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tags per Machine</label>
+              <input
+                type="number"
+                value={formData.tagsPerMachine || ''}
+                onChange={(e) => handleInputChange('tagsPerMachine', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Number of tags"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Concurrent Users</label>
+              <input
+                type="number"
+                value={formData.concurrentUsers || ''}
+                onChange={(e) => handleInputChange('concurrentUsers', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Number of users"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Storage Duration (months)</label>
+              <input
+                type="number"
+                value={formData.storageDurationMonths || ''}
+                onChange={(e) => handleInputChange('storageDurationMonths', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Duration in months"
               />
             </div>
           </div>
-        </div>
-      )}
+        </div> */}
 
-      {/* Azure VM Services */}
-      {formData.cloudProvider === 'azure' && (
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Azure Virtual Machines</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {vmServices.azure.map(vm => (
-              <div
-                key={vm.id}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.azureVm === vm.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 hover:border-blue-400'
-                  }`}
-                onClick={() => handleInputChange('azureVm', vm.id)}
-              >
-                <h4 className="text-md font-semibold text-gray-900 mb-1">{vm.name}</h4>
-                <p className="text-gray-700 text-sm mb-2">${(vm.pricing.hourly * 24 * 30).toFixed(2)} USD / month</p>
-                <p className="text-gray-600 text-xs mb-2">${vm.pricing.hourly}/hour</p>
-                <p className="text-gray-600 text-sm mb-3">{vm.description}</p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  {vm.features.map((feature, idx) => (
-                    <li key={idx}>• {feature}</li>
-                  ))}
-                </ul>
+        {/* Workload Summary */}
+        {recommendations && (
+          <div className="bg-green-50 p-6 rounded-xl shadow-md">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Workload Analysis</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="font-semibold text-gray-700">Total Messages/Month:</span>
+                <div className="text-lg text-blue-600">{recommendations.workload.totalMessagesPerMonth.toLocaleString()}</div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Google Cloud VM Services */}
-      {formData.cloudProvider === 'google' && (
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Google Cloud Compute Engine</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {vmServices.google.map(vm => (
-              <div
-                key={vm.id}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.googleVm === vm.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 hover:border-blue-400'
-                  }`}
-                onClick={() => handleInputChange('googleVm', vm.id)}
-              >
-                <h4 className="text-md font-semibold text-gray-900 mb-1">{vm.name}</h4>
-                <p className="text-gray-700 text-sm mb-2">${(vm.pricing.hourly * 24 * 30).toFixed(2)} USD / month</p>
-                <p className="text-gray-600 text-xs mb-2">${vm.pricing.hourly}/hour</p>
-                <p className="text-gray-600 text-sm mb-3">{vm.description}</p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  {vm.features.map((feature, idx) => (
-                    <li key={idx}>• {feature}</li>
-                  ))}
-                </ul>
+              <div>
+                <span className="font-semibold text-gray-700">Data/Month:</span>
+                <div className="text-lg text-blue-600">{recommendations.workload.totalDataPerMonthGB} GB</div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* VM Summary Section */}
-      {formData.cloudProvider && (
-        <div className="bg-green-50 p-6 rounded-xl shadow-md mt-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Virtual Machine Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800 text-sm md:text-base">
-
-            <div>
-              <span className="font-semibold">Provider:</span> {formData.cloudProvider.charAt(0).toUpperCase() + formData.cloudProvider.slice(1)}
+              <div>
+                <span className="font-semibold text-gray-700">Storage Required:</span>
+                <div className="text-lg text-blue-600">{recommendations.workload.totalStorageRequiredGB} GB</div>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Transfer Required:</span>
+                <div className="text-lg text-blue-600">{recommendations.workload.totalTransferRequiredTB} TB</div>
+              </div>
             </div>
-
-            {/* AWS Lightsail Summary */}
-            {formData.cloudProvider === 'aws' && formData.vmService === 'lightsail' && formData.lightsailPlan && (() => {
-              const plan = awsLightsailPlans.find(p => p.id === formData.lightsailPlan);
-              return plan ? (
-                <>
-                  <div>
-                    <span className="font-semibold">Service:</span> AWS Lightsail
-                  </div>
-                  <div>
-                    <span className="font-semibold">Plan:</span> {plan.name}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Price:</span> ${plan.price.toFixed(2)} USD / month
-                  </div>
-                  <div>
-                    <span className="font-semibold">Specs:</span> {plan.ram}, {plan.cpu}
-                  </div>
-                </>
-              ) : null;
-            })()}
-
-            {/* AWS EC2 Summary */}
-            {formData.cloudProvider === 'aws' && formData.vmService === 'ec2' && formData.ec2Plan && (() => {
-              const plan = awsEc2Plans.find(p => p.id === formData.ec2Plan);
-              return plan ? (
-                <>
-                  <div>
-                    <span className="font-semibold">Service:</span> AWS EC2
-                  </div>
-                  <div>
-                    <span className="font-semibold">Instance:</span> {plan.name}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Storage Size (EBS):</span> {formData.ebsStorage} GB
-                  </div>
-                  <div>
-                    <span className="font-semibold">Price:</span> ${plan.price.toFixed(2) + (formData.ebsStorage * 0.08).toFixed(0)} USD / month
-                  </div>
-                  <div>
-                    <span className="font-semibold">Specs:</span> {plan.ram}, {plan.cpu}
-                  </div>
-                </>
-              ) : null;
-            })()}
-
-            {/* Azure VM Summary */}
-            {formData.cloudProvider === 'azure' && formData.azureVm && (() => {
-              const vm = vmServices.azure.find(v => v.id === formData.azureVm);
-              return vm ? (
-                <>
-                  <div>
-                    <span className="font-semibold">Service:</span> Azure Virtual Machine
-                  </div>
-                  <div>
-                    <span className="font-semibold">Instance:</span> {vm.name}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Price:</span> ${(vm.pricing.hourly * 24 * 30).toFixed(2)} USD / month
-                  </div>
-                  <div>
-                    <span className="font-semibold">Hourly Rate:</span> ${vm.pricing.hourly}/hour
-                  </div>
-                </>
-              ) : null;
-            })()}
-
-            {/* Google Cloud VM Summary */}
-            {formData.cloudProvider === 'google' && formData.googleVm && (() => {
-              const vm = vmServices.google.find(v => v.id === formData.googleVm);
-              return vm ? (
-                <>
-                  <div>
-                    <span className="font-semibold">Service:</span> Google Cloud Compute Engine
-                  </div>
-                  <div>
-                    <span className="font-semibold">Instance:</span> {vm.name}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Price:</span> ${(vm.pricing.hourly * 24 * 30).toFixed(2)} USD / month
-                  </div>
-                  <div>
-                    <span className="font-semibold">Hourly Rate:</span> ${vm.pricing.hourly}/hour
-                  </div>
-                </>
-              ) : null;
-            })()}
-
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-semibold text-gray-700">Required RAM:</span>
+                <span className="ml-2 text-blue-600">{recommendations.workload.requiredRamGB} GB</span>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Required CPU:</span>
+                <span className="ml-2 text-blue-600">{recommendations.workload.requiredCpu} cores</span>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-    </div>
-  );
+        {/* Recommended Plans */}
+        {recommendations && (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-gray-800">Recommended Cloud Plans</h3>
+
+            {/* Best Option Highlight */}
+            {recommendations.comparison.cheapestOption && (
+              <div className="bg-gradient-to-r from-green-100 to-blue-100 p-6 rounded-xl shadow-lg border-2 border-green-400">
+                <div className="flex items-center mb-4">
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold mr-3">
+                    BEST VALUE
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-800">
+                    {recommendations.comparison.cheapestOption.name}
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-2xl font-bold text-green-600">
+                      ${recommendations.comparison.cheapestOption.totalMonthlyCost.toFixed(2)}/month
+                    </p>
+                    <p className="text-sm text-gray-600">{recommendations.comparison.cheapestOption.notes}</p>
+                  </div>
+                  {recommendations.comparison.cheapestOption.costBreakdown && (
+                    <div className="text-sm">
+                      <div className="font-semibold mb-2">Cost Breakdown:</div>
+                      <div>Instance: ${recommendations.comparison.cheapestOption.costBreakdown.instanceCost.toFixed(2)}</div>
+                      {recommendations.comparison.cheapestOption.costBreakdown.additionalCosts > 0 && (
+                        <div>Additional: ${recommendations.comparison.cheapestOption.costBreakdown.additionalCosts.toFixed(2)}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {recommendations.comparison.costSavings && (
+                  <div className="mt-4 text-sm text-green-700">
+                    💰 Save ${recommendations.comparison.costSavings.amount.toFixed(2)} ({recommendations.comparison.costSavings.percentage}%) vs most expensive option
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* All Recommendations Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+              {/* AWS Lightsail */}
+              {recommendations.recommendedPlans.awsLightsail !== 'No suitable plan found' && (
+                <div className="bg-orange-50 p-6 rounded-xl shadow-md border border-orange-200">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-orange-500 text-white px-3 py-1 rounded-md text-sm font-semibold mr-3">
+                      AWS LIGHTSAIL
+                    </div>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    {recommendations.recommendedPlans.awsLightsail.name}
+                  </h4>
+                  <p className="text-xl font-bold text-orange-600 mb-2">
+                    ${recommendations.recommendedPlans.awsLightsail.totalMonthlyCost.toFixed(2)}/month
+                  </p>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div>💾 RAM: {recommendations.recommendedPlans.awsLightsail.ram}</div>
+                    <div>🖥️ CPU: {recommendations.recommendedPlans.awsLightsail.cpu}</div>
+                    <div>💽 Storage: {recommendations.recommendedPlans.awsLightsail.storage}</div>
+                    <div>🌐 Transfer: {recommendations.recommendedPlans.awsLightsail.transfer}</div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">{recommendations.recommendedPlans.awsLightsail.notes}</p>
+                </div>
+              )}
+
+              {/* AWS EC2 */}
+              {recommendations.recommendedPlans.awsEc2 !== 'No suitable plan found' && (
+                <div className="bg-yellow-50 p-6 rounded-xl shadow-md border border-yellow-200">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-yellow-600 text-white px-3 py-1 rounded-md text-sm font-semibold mr-3">
+                      AWS EC2
+                    </div>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    {recommendations.recommendedPlans.awsEc2.name}
+                  </h4>
+                  <p className="text-xl font-bold text-yellow-600 mb-2">
+                    ${recommendations.recommendedPlans.awsEc2.totalMonthlyCost.toFixed(2)}/month
+                  </p>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div>💾 RAM: {recommendations.recommendedPlans.awsEc2.ram}</div>
+                    <div>🖥️ CPU: {recommendations.recommendedPlans.awsEc2.cpu}</div>
+                    <div>💽 Storage: {recommendations.recommendedPlans.awsEc2.storage}</div>
+                    <div>🌐 Transfer: {recommendations.recommendedPlans.awsEc2.transfer}</div>
+                  </div>
+                  {recommendations.recommendedPlans.awsEc2.costBreakdown && (
+                    <div className="text-xs text-gray-500 mt-2">
+                      Instance: ${recommendations.recommendedPlans.awsEc2.costBreakdown.instanceCost.toFixed(2)} +
+                      EBS: ${recommendations.recommendedPlans.awsEc2.costBreakdown.ebsStorage.toFixed(2)} +
+                      Transfer: ${recommendations.recommendedPlans.awsEc2.costBreakdown.dataTransfer.toFixed(2)}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">{recommendations.recommendedPlans.awsEc2.notes}</p>
+                </div>
+              )}
+
+              {/* Azure */}
+              {recommendations.recommendedPlans.azure !== 'No suitable plan found' && (
+                <div className="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm font-semibold mr-3">
+                      AZURE
+                    </div>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    {recommendations.recommendedPlans.azure.name}
+                  </h4>
+                  <p className="text-xl font-bold text-blue-600 mb-2">
+                    ${recommendations.recommendedPlans.azure.totalMonthlyCost.toFixed(2)}/month
+                  </p>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div>💾 RAM: {recommendations.recommendedPlans.azure.ram} GB</div>
+                    <div>🖥️ CPU: {recommendations.recommendedPlans.azure.cpu} cores</div>
+                    <div>💽 Storage: {recommendations.recommendedPlans.azure.storage} GB</div>
+                  </div>
+                  {recommendations.recommendedPlans.azure.costBreakdown && (
+                    <div className="text-xs text-gray-500 mt-2">
+                      Instance: ${recommendations.recommendedPlans.azure.costBreakdown.instanceCost.toFixed(2)} +
+                      Disk: ${recommendations.recommendedPlans.azure.costBreakdown.managedDisk.toFixed(2)} +
+                      Bandwidth: ${recommendations.recommendedPlans.azure.costBreakdown.bandwidth.toFixed(2)}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">{recommendations.recommendedPlans.azure.notes}</p>
+                </div>
+              )}
+
+              {/* Google Cloud */}
+              {recommendations.recommendedPlans.gcp !== 'No suitable plan found' && (
+                <div className="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-red-500 text-white px-3 py-1 rounded-md text-sm font-semibold mr-3">
+                      GOOGLE CLOUD
+                    </div>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    {recommendations.recommendedPlans.gcp.name}
+                  </h4>
+                  <p className="text-xl font-bold text-red-600 mb-2">
+                    ${recommendations.recommendedPlans.gcp.totalMonthlyCost.toFixed(2)}/month
+                  </p>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div>💾 RAM: {recommendations.recommendedPlans.gcp.ram} GB</div>
+                    <div>🖥️ CPU: {recommendations.recommendedPlans.gcp.cpu} cores</div>
+                  </div>
+                  {recommendations.recommendedPlans.gcp.costBreakdown && (
+                    <div className="text-xs text-gray-500 mt-2">
+                      Instance: ${recommendations.recommendedPlans.gcp.costBreakdown.instanceCost.toFixed(2)} +
+                      Disk: ${recommendations.recommendedPlans.gcp.costBreakdown.persistentDisk.toFixed(2)} +
+                      Egress: ${recommendations.recommendedPlans.gcp.costBreakdown.networkEgress.toFixed(2)}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">{recommendations.recommendedPlans.gcp.notes}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Final Selection & Costing */}
+        {recommendations && recommendations.comparison.cheapestOption && (
+          <div className="border-t pt-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-6">Final Selection & Costing</h3>
+
+            <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-8 rounded-xl shadow-lg border-2 border-purple-300">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <div className="flex items-center mb-2">
+                    <div className="bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold mr-3">
+                      SELECTED PLAN
+                    </div>
+                    <h4 className="text-2xl font-bold text-gray-800">
+                      {recommendations.comparison.cheapestOption.name}
+                    </h4>
+                  </div>
+                  <p className="text-gray-600">{recommendations.comparison.cheapestOption.notes}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-purple-600">
+                    ${recommendations.comparison.cheapestOption.totalMonthlyCost.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-600">per month</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                {/* Plan Specifications */}
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <h5 className="font-semibold text-gray-700 mb-2">Specifications</h5>
+                  <div className="text-sm space-y-1">
+                    {recommendations.comparison.cheapestOption.ram && (
+                      <div>💾 RAM: {recommendations.comparison.cheapestOption.ram} GB</div>
+                    )}
+                    {recommendations.comparison.cheapestOption.cpu && (
+                      <div>🖥️ CPU: {recommendations.comparison.cheapestOption.cpu} cores</div>
+                    )}
+                    {recommendations.comparison.cheapestOption.storage && (
+                      <div>💽 Storage: {recommendations.comparison.cheapestOption.storage} GB</div>
+                    )}
+                    {recommendations.comparison.cheapestOption.transfer && (
+                      <div>🌐 Transfer: {recommendations.comparison.cheapestOption.transfer}</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cost Breakdown */}
+                {recommendations.comparison.cheapestOption.costBreakdown && (
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h5 className="font-semibold text-gray-700 mb-2">Cost Breakdown</h5>
+                    <div className="text-sm space-y-1">
+                      <div>Instance: ${recommendations.comparison.cheapestOption.costBreakdown.instanceCost.toFixed(2)}</div>
+                      {recommendations.comparison.cheapestOption.costBreakdown.ebsStorage > 0 && (
+                        <div>EBS Storage: ${recommendations.comparison.cheapestOption.costBreakdown.ebsStorage.toFixed(2)}</div>
+                      )}
+                      {recommendations.comparison.cheapestOption.costBreakdown.managedDisk > 0 && (
+                        <div>Managed Disk: ${recommendations.comparison.cheapestOption.costBreakdown.managedDisk.toFixed(2)}</div>
+                      )}
+                      {recommendations.comparison.cheapestOption.costBreakdown.persistentDisk > 0 && (
+                        <div>Persistent Disk: ${recommendations.comparison.cheapestOption.costBreakdown.persistentDisk.toFixed(2)}</div>
+                      )}
+                      {recommendations.comparison.cheapestOption.costBreakdown.dataTransfer > 0 && (
+                        <div>Data Transfer: ${recommendations.comparison.cheapestOption.costBreakdown.dataTransfer.toFixed(2)}</div>
+                      )}
+                      {recommendations.comparison.cheapestOption.costBreakdown.bandwidth > 0 && (
+                        <div>Bandwidth: ${recommendations.comparison.cheapestOption.costBreakdown.bandwidth.toFixed(2)}</div>
+                      )}
+                      {recommendations.comparison.cheapestOption.costBreakdown.networkEgress > 0 && (
+                        <div>Network Egress: ${recommendations.comparison.cheapestOption.costBreakdown.networkEgress.toFixed(2)}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Annual Projection */}
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <h5 className="font-semibold text-gray-700 mb-2">Annual Projection</h5>
+                  <div className="text-sm space-y-1">
+                    <div className="text-lg font-bold text-green-600">
+                      ${(recommendations.comparison.cheapestOption.totalMonthlyCost * 12).toFixed(2)}
+                    </div>
+                    <div className="text-gray-600">Total yearly cost</div>
+                    {recommendations.comparison.costSavings && (
+                      <div className="text-green-700 text-xs mt-2">
+                        Annual savings: ${(recommendations.comparison.costSavings.amount * 12).toFixed(2)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Resource Utilization */}
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <h5 className="font-semibold text-gray-700 mb-2">Resource Match</h5>
+                  <div className="text-sm space-y-1">
+                    <div className="flex justify-between">
+                      <span>RAM Required:</span>
+                      <span className="text-green-600">{recommendations.workload.requiredRamGB} GB</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>CPU Required:</span>
+                      <span className="text-green-600">{recommendations.workload.requiredCpu} cores</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Storage Needed:</span>
+                      <span className="text-green-600">{recommendations.workload.totalStorageRequiredGB} GB</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Transfer Needed:</span>
+                      <span className="text-green-600">{recommendations.workload.totalTransferRequiredTB} TB</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-purple-200">
+              <button 
+                className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                onClick={() => {
+                  // Update form data with selected plan
+                  const selectedPlan = recommendations.comparison.cheapestOption;
+                  if (selectedPlan.id && selectedPlan.id.includes('lightsail')) {
+                    handleInputChange('cloudProvider', 'aws');
+                    handleInputChange('vmService', 'lightsail');
+                    handleInputChange('lightsailPlan', selectedPlan.id);
+                  } else if (selectedPlan.id && selectedPlan.id.includes('ec2')) {
+                    handleInputChange('cloudProvider', 'aws');
+                    handleInputChange('vmService', 'ec2');
+                    handleInputChange('ec2Plan', selectedPlan.id);
+                  } else if (selectedPlan.id && selectedPlan.id.includes('azure')) {
+                    handleInputChange('cloudProvider', 'azure');
+                    handleInputChange('azureVm', selectedPlan.id);
+                  } else if (selectedPlan.id && selectedPlan.id.includes('gcp')) {
+                    handleInputChange('cloudProvider', 'google');
+                    handleInputChange('googleVm', selectedPlan.id);
+                  }
+                  
+                  // Store final costing information
+                  handleInputChange('finalPlan', {
+                    name: selectedPlan.name,
+                    provider: selectedPlan.id ? selectedPlan.id.split('-')[0] : 'unknown',
+                    monthlyCost: selectedPlan.totalMonthlyCost,
+                    annualCost: selectedPlan.totalMonthlyCost * 12,
+                    costBreakdown: selectedPlan.costBreakdown,
+                    specifications: {
+                      ram: selectedPlan.ram,
+                      cpu: selectedPlan.cpu,
+                      storage: selectedPlan.storage,
+                      transfer: selectedPlan.transfer
+                    },
+                    workloadMatch: {
+                      requiredRam: recommendations.workload.requiredRamGB,
+                      requiredCpu: recommendations.workload.requiredCpu,
+                      requiredStorage: recommendations.workload.totalStorageRequiredGB,
+                      requiredTransfer: recommendations.workload.totalTransferRequiredTB
+                    }
+                  });
+
+                  handleNext()
+                }}
+              >
+                🚀 Confirm & Proceed with This Plan
+              </button>
+            </div>          
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderPage5 = () => {
     const totalCost = calculateTotalCost();
@@ -1154,6 +1336,7 @@ const IIoTCostCalculator = () => {
     const selectedMqttBroker = mqttBrokers.find(m => m.id === formData.mqttBroker);
     const selectedDatabase = databases.find(d => d.id === formData.database);
     const vmCost = vmCostCalculation().price
+
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
@@ -1279,10 +1462,10 @@ const IIoTCostCalculator = () => {
             )}
             {formData.provider && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-700">{formData.provider.toUpperCase() + " - " + formData.vmService.charAt(0).toUpperCase() + formData.vmService.slice(1)  + " - " + getCurrentService()}</span>
+                <span className="text-gray-700">{formData.provider.toUpperCase() + " - " + formData.vmService.charAt(0).toUpperCase() + formData.vmService.slice(1) + " - " + getCurrentService()}</span>
                 <span className="font-medium">
                   ${(() => {
-                    return parseFloat(vmCost).toFixed(2)
+                    return parseFloat(formData.finalPlan.monthlyCost).toFixed(2)
                   })()}/month
                 </span>
               </div>
