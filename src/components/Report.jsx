@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { FileText, Download, Save, Loader2, X } from "lucide-react";
+import { FileText, Printer, Save, Loader2, X } from "lucide-react";
 // import jsPDF from 'jspdf'; 
 // import html2canvas from 'html2canvas';
 import { useNavigate } from "react-router-dom";
@@ -61,7 +61,7 @@ const CostReportComponent = ({
   const selectedCloudBroker = cloudBrokers.find((b) => b.id === formData.cloudBroker);
   const selectedDatabase = databases.find((d) => d.id === formData.database);
 
-const handleSave = async (client) => {
+  const handleSave = async (client) => {
     if (!SaveReport) return;
     setIsSaving(true);
     setSaveStatus("");
@@ -125,6 +125,334 @@ const handleSave = async (client) => {
   //   }
   // };
 
+  const handlePrint = async (client) => {
+  setIsDownloading(true);
+  try {
+    if (!client) {
+      throw new Error("Client name is required");
+    }
+
+    const reportElement = reportRef.current;
+    if (!reportElement) {
+      throw new Error("Report element not found");
+    }
+
+    // Get all stylesheets from the current document
+    const stylesheets = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          if (styleSheet.href) {
+            return `<link rel="stylesheet" href="${styleSheet.href}">`;
+          } else {
+            const rules = Array.from(styleSheet.cssRules || styleSheet.rules || []);
+            const css = rules.map(rule => rule.cssText).join('\n');
+            return `<style>${css}</style>`;
+          }
+        } catch (e) {
+          if (styleSheet.href) {
+            return `<link rel="stylesheet" href="${styleSheet.href}">`;
+          }
+          return '';
+        }
+      })
+      .join('\n');
+
+    // Improved print styles that preserve your design
+    const printStyles = `
+      <style>
+        @media print {
+          @page { 
+            margin: 0.5in; 
+            size: letter;
+          }
+          
+          body { 
+            margin: 0; 
+            padding: 0;
+            background: white !important;
+            color: black !important;
+            font-family: system-ui, -apple-system, sans-serif;
+          }
+          
+          .no-print { 
+            display: none !important; 
+          }
+          
+          /* Preserve your gradient backgrounds as solid colors for print */
+          .bg-gradient-to-br {
+            background: #4f46e5 !important; /* Indigo background */
+            color: white !important;
+          }
+          
+          .from-indigo-600 {
+            background: #4f46e5 !important;
+          }
+          
+          .from-green-50 {
+            background: #f0fdf4 !important;
+            border: 1px solid #22c55e !important;
+          }
+          
+          .from-purple-50 {
+            background: #faf5ff !important;
+            border: 1px solid #a855f7 !important;
+          }
+          
+          .from-orange-50 {
+            background: #fff7ed !important;
+            border: 1px solid #f97316 !important;
+          }
+          
+          .bg-gray-50 {
+            background: #f9fafb !important;
+            border: 1px solid #d1d5db !important;
+          }
+          
+          /* Preserve your spacing and layout */
+          .shadow-2xl,
+          .shadow-xl,
+          .shadow-lg {
+            box-shadow: none !important;
+            border: 1px solid #e5e7eb !important;
+          }
+          
+          /* Keep your text sizes but make them print-friendly */
+          .text-4xl {
+            font-size: 28px !important;
+            line-height: 1.2 !important;
+          }
+          
+          .text-3xl {
+            font-size: 24px !important;
+            line-height: 1.2 !important;
+          }
+          
+          .text-2xl {
+            font-size: 20px !important;
+            line-height: 1.3 !important;
+          }
+          
+          .text-xl {
+            font-size: 18px !important;
+            line-height: 1.4 !important;
+          }
+          
+          .text-lg {
+            font-size: 16px !important;
+            line-height: 1.4 !important;
+          }
+          
+          .text-base {
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+          }
+          
+          .text-sm {
+            font-size: 12px !important;
+            line-height: 1.4 !important;
+          }
+          
+          /* Preserve your grid layouts */
+          .grid {
+            display: grid !important;
+          }
+          
+          .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+          }
+          
+          .grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          }
+          
+          .grid-cols-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          }
+          
+          @media print and (min-width: 768px) {
+            .md\\:grid-cols-3 {
+              grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+            
+            .md\\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          @media print and (min-width: 1024px) {
+            .lg\\:grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          /* Preserve spacing */
+          .gap-6 {
+            gap: 1.5rem !important;
+          }
+          
+          .gap-4 {
+            gap: 1rem !important;
+          }
+          
+          .gap-3 {
+            gap: 0.75rem !important;
+          }
+          
+          /* Preserve padding and margins */
+          .p-6 {
+            padding: 1.5rem !important;
+          }
+          
+          .p-4 {
+            padding: 1rem !important;
+          }
+          
+          .px-6 {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+          }
+          
+          .py-3 {
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+          }
+          
+          .py-2 {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+          }
+          
+          .py-10 {
+            padding-top: 2.5rem !important;
+            padding-bottom: 2.5rem !important;
+          }
+          
+          .mb-8 {
+            margin-bottom: 2rem !important;
+          }
+          
+          .mb-4 {
+            margin-bottom: 1rem !important;
+          }
+          
+          .mb-10 {
+            margin-bottom: 2.5rem !important;
+          }
+          
+          /* Preserve border radius */
+          .rounded-2xl {
+            border-radius: 1rem !important;
+          }
+          
+          .rounded-xl {
+            border-radius: 0.75rem !important;
+          }
+          
+          .rounded-lg {
+            border-radius: 0.5rem !important;
+          }
+          
+          /* Ensure text colors are visible */
+          .text-white {
+            color: white !important;
+          }
+          
+          .text-gray-900 {
+            color: #111827 !important;
+          }
+          
+          .text-gray-800 {
+            color: #1f2937 !important;
+          }
+          
+          .text-gray-700 {
+            color: #374151 !important;
+          }
+          
+          .text-gray-600 {
+            color: #4b5563 !important;
+          }
+          
+          .text-indigo-600 {
+            color: #4f46e5 !important;
+          }
+          
+          .text-green-600,
+          .text-green-700,
+          .text-green-800 {
+            color: #16a34a !important;
+          }
+          
+          .text-purple-600,
+          .text-purple-700,
+          .text-purple-800 {
+            color: #9333ea !important;
+          }
+          
+          .text-orange-600,
+          .text-orange-700,
+          .text-orange-800 {
+            color: #ea580c !important;
+          }
+          
+          /* Ensure icons don't break layout */
+          svg {
+            display: inline-block !important;
+            vertical-align: middle !important;
+          }
+          
+          /* Scale the entire report slightly to fit better */
+          .report-container {
+            transform: scale(0.95) !important;
+            transform-origin: top left !important;
+            width: 105.3% !important;
+          }
+        }
+      </style>
+    `;
+
+    // Create print window
+    const printWindow = window.open('', '_blank');
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Cost Report - ${client}</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          ${stylesheets}
+          ${printStyles}
+        </head>
+        <body>
+          <div class="report-container">
+            ${reportElement.innerHTML}
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Handle printing
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 1000);
+    };
+
+  } catch (error) {
+    console.error("Print/PDF generation failed:", error);
+    setSaveStatus("Failed to generate report. Please try again.");
+    setTimeout(() => setSaveStatus(""), 3000);
+  } finally {
+    setIsDownloading(false);
+    setShowClientPopup(false);
+    setClientName("");
+  }
+};
+
   const handleActionClick = (type) => {
     setActionType(type);
     setShowClientPopup(true);
@@ -137,8 +465,8 @@ const handleSave = async (client) => {
     }
     if (actionType === "save") {
       handleSave(clientName);
-    } else if (actionType === "download") {
-      // handleDownload(clientName);
+    } else if (actionType === "print") {
+      handlePrint(clientName);
     }
   };
 
@@ -189,8 +517,33 @@ const handleSave = async (client) => {
         </div>
       )}
 
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 print:hidden">
+        <button
+          onClick={() => handleActionClick("save")}
+          disabled={isSaving || isDownloading}
+          className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+          {isSaving ? "Saving..." : "Save Report"}
+        </button>
+        <button
+          onClick={() => handleActionClick("print")} // or directly: onClick={() => handlePrint(clientName)}
+          disabled={isSaving || isDownloading}
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          {isDownloading ? <Loader2 className="animate-spin" size={20} /> : <Printer size={20} />}
+          {isDownloading ? "Processing..." : "Print"}
+        </button>
+        {saveStatus && (
+          <div className={`text-sm font-medium ${saveStatus.includes("success") ? "text-green-600" : "text-red-600"}`}>
+            {saveStatus}
+          </div>
+        )}
+      </div>
+
       {/* Report Content */}
-      <div ref={reportRef} className="bg-white shadow-2xl rounded-2xl border border-gray-200 print:shadow-none print:border-none">
+      <div ref={reportRef} className="bg-white shadow-2xl rounded-2xl border border-gray-200 print:shadow-none print:border-none py-10">
         {/* Header */}
         <div className="text-center mb-10 border-b pb-6">
           <FileText className="mx-auto mb-4 text-indigo-600" size={56} />
@@ -201,31 +554,6 @@ const handleSave = async (client) => {
           <div className="text-sm text-gray-500 mt-1">
             Generated on Sunday, June 22, 2025 at 02:32 PM IST
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 print:hidden">
-          <button
-            onClick={() => handleActionClick("save")}
-            disabled={isSaving || isDownloading}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-            {isSaving ? "Saving..." : "Save Report"}
-          </button>
-          {/* <button
-            onClick={() => handleActionClick("download")}
-            disabled={isSaving || isDownloading}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            {isDownloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
-            {isDownloading ? "Downloading..." : "Download PDF"}
-          </button> */}
-          {saveStatus && (
-            <div className={`text-sm font-medium ${saveStatus.includes("success") ? "text-green-600" : "text-red-600"}`}>
-              {saveStatus}
-            </div>
-          )}
         </div>
 
         {/* Summary Section */}
