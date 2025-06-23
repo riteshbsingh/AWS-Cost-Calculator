@@ -122,31 +122,31 @@ export const azurePlans = [
     { id: 'azure-nc24s_v2', name: 'NC24s_v2', ram: 448, cpu: 24, storage: 1344, price: 8116.8 },
 
     // H-Series High Performance Computing
-    { id: 'azure-h8', name: 'H8', ram: 56, cpu: 8, storage: 1000, price: 1095.2 },
-    { id: 'azure-h16', name: 'H16', ram: 112, cpu: 16, storage: 2000, price: 2190.4 },
-    { id: 'azure-h8m', name: 'H8m', ram: 112, cpu: 8, storage: 1000, price: 1542.4 },
-    { id: 'azure-h16m', name: 'H16m', ram: 224, cpu: 16, storage: 2000, price: 3084.8 }
+    { id: 'azure-h8', name: 'H8', ram: 56, cpu: 8, storage: 1000, price: 1095.2, service: 'azure', provider: 'azure' },
+    { id: 'azure-h16', name: 'H16', ram: 112, cpu: 16, storage: 2000, price: 2190.4, service: 'azure', provider: 'azure' },
+    { id: 'azure-h8m', name: 'H8m', ram: 112, cpu: 8, storage: 1000, price: 1542.4, service: 'azure', provider: 'azure' },
+    { id: 'azure-h16m', name: 'H16m', ram: 224, cpu: 16, storage: 2000, price: 3084.8, service: 'azure', provider: 'azure' }
 ];
 
 export const AWS_LIGHTSAIL_PLANS = [
-    { id: 'plan-5', name: '$5/mo', price: 5, ram: 0.5, cpu: '2 vCPUs', storage: '20 GB SSD', transfer: '1 TB', service: 'Lightsail' },
-    { id: 'plan-7', name: '$7/mo', price: 7, ram: 1, cpu: '2 vCPUs', storage: '40 GB SSD', transfer: '2 TB', service: 'Lightsail' },
-    { id: 'plan-12', name: '$12/mo', price: 12, ram: 2, cpu: '2 vCPUs', storage: '60 GB SSD', transfer: '3 TB', service: 'Lightsail' },
-    { id: 'plan-24', name: '$24/mo', price: 24, ram: 4, cpu: '2 vCPUs', storage: '80 GB SSD', transfer: '4 TB', service: 'Lightsail' },
-    { id: 'plan-44', name: '$44/mo', price: 44, ram: 8, cpu: '2 vCPUs', storage: '160 GB SSD', transfer: '5 TB', service: 'Lightsail' },
-    { id: 'plan-84', name: '$84/mo', price: 84, ram: 16, cpu: '4 vCPUs', storage: '320 GB SSD', transfer: '6 TB', service: 'Lightsail' },
-    { id: 'plan-164', name: '$164/mo', price: 164, ram: 32, cpu: '8 vCPUs', storage: '640 GB SSD', transfer: '7 TB', service: 'Lightsail' },
-    { id: 'plan-384', name: '$384/mo', price: 384, ram: 64, cpu: '16 vCPUs', storage: '1280 GB SSD', transfer: '8 TB', service: 'Lightsail' },
+    { id: 'lightsail-plan-5', name: '$5/mo', price: 5, ram: 0.5, cpu: '2 vCPUs', storage: '20 GB SSD', transfer: '1 TB', service: 'Lightsail', provider: 'Lightsail' },
+    { id: 'lightsail-plan-7', name: '$7/mo', price: 7, ram: 1, cpu: '2 vCPUs', storage: '40 GB SSD', transfer: '2 TB', service: 'Lightsail', provider: 'Lightsail' },
+    { id: 'lightsail-plan-12', name: '$12/mo', price: 12, ram: 2, cpu: '2 vCPUs', storage: '60 GB SSD', transfer: '3 TB', service: 'Lightsail', provider: 'Lightsail' },
+    { id: 'lightsail-plan-24', name: '$24/mo', price: 24, ram: 4, cpu: '2 vCPUs', storage: '80 GB SSD', transfer: '4 TB', service: 'Lightsail', provider: 'Lightsail' },
+    { id: 'lightsail-plan-44', name: '$44/mo', price: 44, ram: 8, cpu: '2 vCPUs', storage: '160 GB SSD', transfer: '5 TB', service: 'Lightsail', provider: 'Lightsail' },
+    { id: 'lightsail-plan-84', name: '$84/mo', price: 84, ram: 16, cpu: '4 vCPUs', storage: '320 GB SSD', transfer: '6 TB', service: 'Lightsail', provider: 'Lightsail' },
+    { id: 'lightsail-plan-164', name: '$164/mo', price: 164, ram: 32, cpu: '8 vCPUs', storage: '640 GB SSD', transfer: '7 TB', service: 'Lightsail', provider: 'Lightsail' },
+    { id: 'lightsail-plan-384', name: '$384/mo', price: 384, ram: 64, cpu: '16 vCPUs', storage: '1280 GB SSD', transfer: '8 TB', service: 'Lightsail', provider: 'Lightsail' },
 ];
 
 export const AWS_EC2_PLANS = [
-    { id: 'ec2-t3a.nano', name: 't3a.nano', price: 3.43, ram: 0.5, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2' },
-    { id: 'ec2-t3a.micro', name: 't3a.micro', price: 6.95, ram: 1, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2' },
-    { id: 'ec2-t3a.small', name: 't3a.small', price: 13.96, ram: 2, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2' },
-    { id: 'ec2-t3a.medium', name: 't3a.medium', price: 27.89, ram: 4, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2' },
-    { id: 'ec2-t3a.large', name: 't3a.large', price: 54.90, ram: 8, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2' },
-    { id: 'ec2-t3a.xlarge', name: 't3a.xlarge', price: 109.79, ram: 16, cpu: '4 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2' },
-    { id: 'ec2-t3a.2xlarge', name: 't3a.2xlarge', price: 219.58, ram: 32, cpu: '8 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2' },
+    { id: 'ec2-t3a.nano', name: 't3a.nano', price: 3.43, ram: 0.5, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2', provider: 'EC2'  },
+    { id: 'ec2-t3a.micro', name: 't3a.micro', price: 6.95, ram: 1, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2', provider: 'EC2'  },
+    { id: 'ec2-t3a.small', name: 't3a.small', price: 13.96, ram: 2, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2', provider: 'EC2'  },
+    { id: 'ec2-t3a.medium', name: 't3a.medium', price: 27.89, ram: 4, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2', provider: 'EC2'  },
+    { id: 'ec2-t3a.large', name: 't3a.large', price: 54.90, ram: 8, cpu: '2 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2', provider: 'EC2'  },
+    { id: 'ec2-t3a.xlarge', name: 't3a.xlarge', price: 109.79, ram: 16, cpu: '4 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2', provider: 'EC2'  },
+    { id: 'ec2-t3a.2xlarge', name: 't3a.2xlarge', price: 219.58, ram: 32, cpu: '8 vCPUs (Burstable)', storage: 'EBS only', transfer: 'Up to 5 Gbps', service: 'EC2', provider: 'EC2'  },
 ];
 
 export const gcpPlans = [
@@ -157,7 +157,8 @@ export const gcpPlans = [
         cpu: 2,
         storage: 10,
         price: 6.11,
-        service: 'GCP'
+        service: 'GCP',
+        provider: 'GCP'
     },
     {
         id: 'gcp-e2-small',
@@ -166,7 +167,8 @@ export const gcpPlans = [
         cpu: 2,
         storage: 10,
         price: 12.23,
-        service: 'GCP'
+        service: 'GCP',
+        provider: 'GCP'
     },
     {
         id: 'gcp-e2-medium',
@@ -175,7 +177,8 @@ export const gcpPlans = [
         cpu: 2,
         storage: 10,
         price: 24.45,
-        service: 'GCP'
+        service: 'GCP',
+        provider: 'GCP'
     },
     {
         id: 'gcp-e2-standard-2',
@@ -184,7 +187,8 @@ export const gcpPlans = [
         cpu: 2,
         storage: 10,
         price: 48.91,
-        service: 'GCP'
+        service: 'GCP',
+        provider: 'GCP'
     },
     {
         id: 'gcp-e2-standard-4',
@@ -193,7 +197,8 @@ export const gcpPlans = [
         cpu: 4,
         storage: 10,
         price: 97.81,
-        service: 'GCP'
+        service: 'GCP',
+        provider: 'GCP'
     },
     {
         id: 'gcp-e2-standard-8',
@@ -202,6 +207,7 @@ export const gcpPlans = [
         cpu: 8,
         storage: 10,
         price: 195.62,
-        service: 'GCP'
+        service: 'GCP',
+        provider: 'GCP'
     }
 ];

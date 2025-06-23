@@ -22,7 +22,6 @@ export const Page4VMSelection = ({
         configuration.storageDurationMonths
       );
       setRecommendations(recs);
-      console.log(recs)
     }
   }, [configuration]);
 
@@ -110,7 +109,7 @@ export const Page4VMSelection = ({
 
   const handlePlanSelection = (plan) => {
     if (!plan || !recommendations) return;
-    console.log(plan)
+
     // Prepare final plan data
     const finalPlan = {
       id: plan.id,
@@ -243,7 +242,7 @@ export const Page4VMSelection = ({
     const finalPlan = {
       id: selectedPlan.id,
       name: selectedPlan.name,
-      provider: selectedPlan.provider,
+      provider: selectedPlan.provider || selectedPlan.service,
       monthlyCost: selectedPlan.totalMonthlyCost,
       annualCost: selectedPlan.totalMonthlyCost * 12,
       costBreakdown: selectedPlan.costBreakdown,
@@ -270,7 +269,7 @@ export const Page4VMSelection = ({
       providerSettings = {
         cloudProvider: "aws",
         vmService: "lightsail",
-        lightsailPlan: selectedPlan.id
+        awsLightsailPlan: selectedPlan.id
       };
     } else if (selectedPlan.id && selectedPlan.id.includes("ec2")) {
       providerSettings = {
@@ -291,7 +290,6 @@ export const Page4VMSelection = ({
     }
     // Call the parent component's callback with the final plan and provider settings
     onPlanSelected('finalPlan', finalPlan);
-    console.log(selectedPlan)
   }, selectedPlan)
 
   return (
@@ -427,7 +425,7 @@ export const Page4VMSelection = ({
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <div className={`bg-${plan.color}-500 text-white px-3 py-1 rounded-md text-sm font-semibold mr-3`}>
+                    <div className={`text-black px-3 py-1 pl-0 rounded-md text-sm font-bold mr-3`}>
                       {plan.provider}
                     </div>
                     {isCheapestPlan(plan) && (
@@ -660,56 +658,3 @@ export const Page4VMSelection = ({
     </div>
   );
 };
-
-// Demo component to show how to use the isolated Page4 component
-// const DemoUsage = () => {
-//   const [finalPlan, setFinalPlan] = useState(null);
-//   const [providerSettings, setProviderSettings] = useState(null);
-
-//   const configuration = {
-//     machines: 15,
-//     tagsPerMachine: 75,
-//     messageSize: 2,
-//     frequency: 30,
-//     concurrentUsers: 25,
-//     storageDurationMonths: 3
-//   };
-
-//   const handlePlanSelected = (plan, settings) => {
-//     setFinalPlan(plan);
-//     setProviderSettings(settings);
-//     console.log('Final Plan Selected:', plan);
-//     console.log('Provider Settings:', settings);
-//   };
-
-//   const handleNext = () => {
-//     console.log('Moving to next page...');
-//     // Here you would typically navigate to the next page
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-100 p-4">
-//       <div className="max-w-7xl mx-auto">
-//         <div className="bg-white rounded-lg shadow-lg p-8">
-//           <Page4VMSelection
-//             configuration={configuration}
-//             onPlanSelected={handlePlanSelected}
-//             onNext={handleNext}
-//           />
-          
-//           {/* Debug info */}
-//           {finalPlan && (
-//             <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-//               <h3 className="font-bold text-lg mb-2">Selected Plan Info:</h3>
-//               <pre className="text-sm overflow-auto">
-//                 {JSON.stringify({ finalPlan, providerSettings }, null, 2)}
-//               </pre>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default DemoUsage;

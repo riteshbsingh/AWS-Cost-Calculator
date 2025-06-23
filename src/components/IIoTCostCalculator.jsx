@@ -271,7 +271,6 @@ const IIoTCostCalculator = () => {
   };
 
   const handlePage4Next = (finalPlan) => {
-    console.log(finalPlan);
     handleInputChange("finalPlan", finalPlan);
     handleNext();
   };
@@ -1094,7 +1093,7 @@ const IIoTCostCalculator = () => {
                   : "bg-blue-500 text-white hover:bg-blue-600"
               }`}
             >
-              {currentPage === 5 ? "Download" : "Next"}
+              {currentPage === 5 ? "Next" : "Next"}
               {currentPage !== 5 && <ChevronRight size={20} className="ml-2" />}
             </button>
           </div>

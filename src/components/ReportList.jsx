@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FileText, Eye, X } from "lucide-react";
+import { FileText, Eye, X, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ReportListComponent = () => {
   const [reports, setReports] = useState([]);
@@ -7,6 +8,7 @@ const ReportListComponent = () => {
   const [error, setError] = useState("");
   const [selectedReport, setSelectedReport] = useState(null);
   const modalRef = useRef(null);
+  const navigate = useNavigate()
 
   // Fetch reports from backend
   useEffect(() => {
@@ -95,13 +97,20 @@ const ReportListComponent = () => {
     });
   };
 
-  console.log(reports)
-
   return (
     <div className="relative max-w-7xl mx-auto p-8">
       {/* Reports Table */}
       <div className="bg-white shadow-2xl rounded-2xl border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Saved Reports</h2>
+        <div className="flex flex-row justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Saved Reports</h2>
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <ArrowLeft size={16} />
+            Go Back
+          </button>
+        </div>
         {isLoading ? (
           <div className="text-center text-gray-600 py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -169,7 +178,7 @@ const ReportListComponent = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop with blur effect */}
           <div className="absolute inset-0 bg-opacity-30 bg-black-200 backdrop-blur-sm"></div>
-          
+
           {/* Modal Content */}
           <div
             ref={modalRef}
@@ -438,7 +447,7 @@ const ReportListComponent = () => {
                         <div className="flex justify-between items-center py-3 px-4 bg-purple-50 rounded-lg border border-purple-200">
                           <div>
                             <span className="text-gray-800 font-medium">
-                              {formatVMService(selectedReport.formData)}
+                              {`${selectedReport.formData.finalPlan.provider} - ${selectedReport.formData.finalPlan.name}`}
                             </span>
                             <p className="text-sm text-gray-600">Virtual Machine Service</p>
                           </div>

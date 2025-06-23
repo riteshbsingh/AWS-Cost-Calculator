@@ -179,9 +179,10 @@ const handleSave = async (client) => {
               </button>
               <button
                 onClick={handlePopupSubmit}
+                disabled={isSaving}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                Submit
+                {isSaving ? <Loader2 className="animate-spin" size={20} /> : "Submit"}
               </button>
             </div>
           </div>
